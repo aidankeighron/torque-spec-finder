@@ -1,0 +1,22 @@
+# Source documents — copyrighted service manuals, personal use only, never redistributed
+data/sources/
+data/figures/
+
+# Built database
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Local model cache (ONNX embedder + reranker)
+.models/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Local overrides
+config.local.toml
+.env
