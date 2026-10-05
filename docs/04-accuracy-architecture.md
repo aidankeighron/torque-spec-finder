@@ -2,16 +2,18 @@
 
 ## The one rule
 
-> **The LLM never produces, repeats, or touches a number. It only helps choose which database
-> row you meant. The number is rendered server-side from typed columns by a string template.**
+> **Nothing generative ever produces, repeats, or touches a number. Search only selects which
+> stored record you meant. The number is rendered from typed fields by a string template.**
 
-A language model cannot emit a wrong torque spec if it is never in a position to emit a torque
-spec. This is a structural guarantee, not a prompt instruction — prompts are requests, and
-requests get ignored under distribution shift.
+A component cannot emit a wrong torque spec if it is never in a position to emit one. This is a
+structural guarantee, not a prompt instruction — prompts are requests, and requests get ignored
+under distribution shift.
 
-Concretely, the LLM sees: the user's question, and candidate fastener **names, assembly paths,
-and positions**. It never sees a torque value. It returns an enum-constrained verdict. The
-renderer then reads columns from SQLite and formats them.
+The shipped system goes further than the original design: it contains **no language model at
+runtime at all**. Query understanding is a synonym table plus a deterministic position parser,
+so the answer path has no non-deterministic component. Scoring sees fastener **names, assembly
+paths, aliases and positions** — never a torque value, which is why there is no path by which
+searchable content can become answer content.
 
 ## Two independent confidence axes — never combined
 
@@ -66,9 +68,17 @@ Full pipeline in [05 — Retrieval & Abstain](05-retrieval-and-abstain.md). The 
 | Rerank score ≥ `T1` | Nothing relevant found | Calibrated |
 | Top-1 − top-2 margin ≥ `T_margin` | Several equally-plausible candidates | Calibrated |
 | **Position gate** | **upper/lower, front/rear, LH/RH mismatch** | **Deterministic** |
-| LLM verifier == `yes` | Semantic mismatch the scores missed | Model, fails closed |
+| **Unknown-vocabulary gate** | **A part this vehicle does not have** | **Deterministic** |
 | Not `conflicting` | Sources disagree | Data property |
-| Tier acceptable | Insufficient provenance | Data property |
+
+The shipped system has **no LLM verifier** — the synonym table and the deterministic position
+parser do that work, which removes the last non-deterministic component from the answer path.
+
+The unknown-vocabulary gate was added after the golden set caught a real wrong answer: asking
+for a C3 "trailing arm pivot bolt" returned a headlamp actuator nut, because "pivot" and "arm"
+matched and only "trailing" — the word that identified the part — was missing. If a third or
+more of the words you typed appear nowhere in this vehicle's data *and* have no synonym mapping,
+the system will not auto-answer.
 
 **All must pass.** Any failure → candidate list, you pick.
 
@@ -83,9 +93,9 @@ either one cannot be auto-answered — regardless of how high it scored.
 
 Four layers, each sufficient to prevent a wrong number on its own:
 
-1. **Schema** — the number lives in a typed column; nothing generative can write there.
-2. **Ingest validators** — unit cross-check, plausibility bands, dual extraction
-   ([06](06-ingestion.md)).
+1. **Typed data** — the number lives in a typed field; nothing generative can write there.
+2. **Ingest validators** — the unit cross-check, which found 9 real defects in GM's own
+   document, plus mis-join and completeness checks ([06](06-ingestion.md), [10](10-what-testing-found.md)).
 3. **Abstain gate** — above.
 4. **Output guard** — every numeral in the outgoing payload is regex-extracted and asserted to
    exist in the retrieved record. Mismatch → fail closed, never serve.
@@ -93,21 +103,31 @@ Four layers, each sufficient to prevent a wrong number on its own:
 Layer 4 is deliberately redundant with layer 1. If a future refactor ever lets a model near the
 output path, the guard catches it. Redundancy you never trigger is redundancy that's working.
 
-## Why fully-local costs abstains, never correctness
+## Why the semantic layer costs abstains, never correctness
 
-This is the property that makes running everything on your own machine safe.
+The number comes from a typed field, so no scoring component can alter it. But ranking is a
+different matter, and the first version of this section was **wrong**.
 
-The embedder and reranker only **narrow candidates**. The LLM only **confirms or declines**. The
-number comes from a column. So a weaker local model can only fail in one direction: it ranks the
-right bolt lower, or declines to confirm a match — and the system **abstains and asks you to
-pick from a list**.
+The original claim was that a weaker semantic layer "can only rank the right bolt lower", so
+degradation is bounded to recall. That is true of the *value*, and false of the *ranking* —
+scores interact. Testing found three separate paths by which enabling the semantic layer
+produced a wrong answer. See [10 — What Testing Found](10-what-testing-found.md).
 
-**A weaker model buys you more taps, not wrong numbers.** Degradation is bounded by
-construction. There is no accuracy argument for paying for cloud inference here.
+The guarantee now holds because it is enforced in three places, not assumed:
 
-Secondary benefit that matters more than it sounds: threshold calibration runs the eval set
-hundreds of times. With a metered cloud reranker that costs money and quietly discourages
-re-tuning. Local, it's free, so you'll actually do it.
+1. **The semantic score is absent from the rerank sum.** It contributes one ranking to
+   candidate *generation* only.
+2. **BM25 is normalised against all documents, not the candidate pool**, so pool membership
+   cannot rescale anyone's score.
+3. **The pool is the fused leaders unioned with the lexical leaders**, so the lexical-only pool
+   is always a subset of the semantic pool.
+
+Together: enabling the semantic layer can only ADD candidates. Added candidates can shrink the
+top-1/top-2 margin and cause an **abstain**. They cannot evict or reorder the right answer.
+
+**A weaker semantic layer buys you more taps, not wrong numbers** — now by construction rather
+than by hope. The regression test `golden set — with the semantic layer on` asserts it on every
+build, which is the only reason to believe it.
 
 ## Known failure modes and their mitigations
 
@@ -120,15 +140,18 @@ re-tuning. Local, it's free, so you'll actually do it.
 | Right number, wrong state (suspension hanging) | `precondition` column, shown on the card |
 | Spec differs by trim/RPO and we served the wrong one | `applicability` rows expanded at ingest; vehicle is a hard filter |
 | Two sources disagree | Detected at ingest, flagged `conflicting`, both shown with origins |
-| Fastener simply isn't in the data | Tier-E generic chart, explicitly labeled not vehicle-specific — never silent |
-| Model hallucinates a number anyway | Output guard, fails closed |
+| Fastener simply isn't in the data | Reported as absent; nothing is estimated or substituted |
+| Query names a part the car lacks | Unknown-vocabulary gate — never auto-answers |
+| A future change puts a generator in the answer path | Output guard, fails closed |
 
 ## The accuracy claim, stated honestly
 
 This system cannot be *proven* never to be wrong. What it can do, and what the eval harness
 enforces on every build:
 
-- **Zero wrong answers on the golden set** — every query returns the correct fastener or abstains.
+- **Zero wrong answers on the golden set** — 62 queries, 28 of them deliberate near-miss traps;
+  every one returns the correct fastener or declines. Asserted on every build, lexically and with
+  the semantic layer enabled.
 - Every served number traceable to a verbatim source quote.
 - Every uncertainty surfaced rather than smoothed over.
 

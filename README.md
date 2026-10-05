@@ -2,123 +2,156 @@
 
 Natural-language torque spec lookup that **refuses to guess**.
 
-Ask *"what's the torque on my rear sway bar bottom bolt?"* and get the spec, where the number
-came from, how confident the system is that it found **your** bolt, nearby fasteners, and a
-diagram — or an honest "I'm not sure, pick one of these."
+Ask *"rear shock bottom bolt"* and get the spec, every stage of it, where the number came from,
+how confident the system is that it found **your** fastener, and the neighbouring bolts — or an
+honest *"I'm not sure which one you mean, pick from these."*
 
-Built for a 2003 base Corvette (C5, LS1). The architecture generalizes to any vehicle.
+Built for a **2003 base Corvette (C5, LS1)** from GM's own `Fastener Tightening Specifications`
+document. A fully segregated **1979 C3** dataset is registered but empty; its research is
+archived in [research/c3-1979/](research/c3-1979/README.md).
+
+Static Next.js site. **No backend, no database, no external services, no language model.**
 
 ---
 
 ## Why this exists
 
 General-purpose AI gets torque specs right most of the time. For a fastener, "most of the time"
-is a stripped thread or a wheel leaving the car. Observed failures from a general LLM: a
-confidently wrong number, and two contradictory numbers in one answer with no indication which
-applied.
+is a stripped thread or a wheel leaving the car. The failures that prompted this: a confidently
+wrong number, and two contradictory numbers in one answer with no indication which applied.
 
 ## The one rule
 
-> **The LLM never produces, repeats, or touches a number. It only helps choose which database
-> row you meant. The number is rendered from typed database columns by a string template.**
+> **Nothing generative ever produces, repeats, or touches a number. Search only selects which
+> stored record you meant. The number is rendered from typed fields by a string template.**
 
-A language model cannot emit a wrong torque spec if it is never in a position to emit one. The
-LLM sees candidate fastener *names* and returns an enum-constrained verdict. It never sees a
-torque value.
+The shipped system goes further than the original design and contains **no language model at
+runtime at all** — query understanding is a synonym table plus a deterministic position parser,
+so the answer path has no non-deterministic component.
 
 ## Two confidence ratings, never blended
 
 | | |
 |---|---|
-| **Match confidence** | Did we find *your* bolt? Computed per query. |
-| **Source confidence** | Where did the number come from? Tier A (OEM, verified) → E (generic chart). Fixed at ingest. |
+| **Match confidence** | Did we find *your* fastener? Computed per query. |
+| **Source confidence** | Where did the number come from? Tier A (OEM, verified) → E. Fixed at ingest. |
 
-A blended score would hide the distinction that matters. "Definitely your bolt, but the number
-is from a forum" and "straight from GM, but we're unsure which bolt" demand different actions.
+"Definitely your bolt, but the number is from a forum" and "straight from GM, but unsure which
+bolt" demand different actions. One blended percentage can say neither.
 
-## What makes it accurate
-
-- **Hybrid retrieval** — BM25 + vector in one SQLite query, with the vehicle as a hard SQL filter
-- **Deterministic position gate** — if you said *lower*, a candidate marked *upper* cannot be
-  auto-answered, regardless of score. This catches adjacent-bolt confusion, which is the only
-  realistic wrong-answer mode and the one a similarity threshold is blind to.
-- **Unit cross-check at ingest** — GM prints both N·m and lb-ft, so every row self-validates.
-  Catches most OCR digit errors for free.
-- **Conflict detection at ingest** — disagreeing sources are flagged in the database, so the
-  system *knows* it's a conflict and names each origin instead of waffling.
-- **TSB supersession** — a 2005 bulletin revised the C5 ball-joint specs. The manual value is
-  wrong and looks maximally trustworthy. Bulletins are first-class.
-- **Multi-stage + torque-to-yield modeling** — LS1 head bolts are 22 lb-ft → 90° → 90°/50°, and
-  single-use. A bare number is itself a wrong answer there.
-- **Output guard** — every numeral in a response must exist in the retrieved record, or the
-  request fails closed.
-- **Zero-wrong-answers CI gate** — any wrong answer on the golden eval set fails the build.
-  Abstain rate is a UX metric; wrong-answer rate is a hard constraint.
-
-## Stack
-
-Fully local. No cloud account, no Docker, **$0/month**.
-
-SQLite (FTS5 + `sqlite-vec`) · `bge-small-en-v1.5` embeddings · `bge-reranker-base`
-cross-encoder · Ollama for intent/verification (swappable, optional) · FastAPI · plain HTML.
-
-Models run on CPU. A weaker model can only cause **more abstains, never wrong numbers** — the
-degradation is bounded by construction, which is why local is a free choice rather than a
-compromise.
+---
 
 ## Status
 
-**P0 complete** — design, schema, and UI mockup. No data ingested yet.
-
-| Phase | |
+| | |
 |---|---|
-| **P0** Foundation — docs, schema, mockup | ✅ |
-| **P1** Pilot ingest: rear suspension | |
-| **P2** Retrieval + abstain gate + API | |
-| **P3** Eval harness ⚠️ *gates everything after* | |
-| **P4** Full C5 ingest | |
-| **P5** TSB supersession pass | |
-| **P6** Figures + diagram callouts | |
-| **P7** Offline PWA *(optional)* | |
+| Fasteners (C5) | **708** across 52 assemblies |
+| Source | GM 2003 Corvette Fastener Tightening Specifications, 30 pages, sha256-pinned |
+| Supersessions applied | 5 (two GM bulletins — ball joints ×4, connecting rod bolts) |
+| Independently corroborated | 24 values · 3 promoted to tier A |
+| Source defects detected | **9 in GM's own document**, surfaced not corrected |
+| Unit tests | **57 passing**, incl. the zero-wrong-answers gate |
+| End-to-end tests | **21 passing** against the real static build |
+| Golden set | 62 queries, 28 deliberate traps · **0 wrong** · 60% auto-answer · 32% abstain · 8% not-found |
 
-## Try the mockup
+## What makes it accurate
 
-Open [`website/index.html`](website/index.html) in a browser. Static data, no backend. The state
-switcher shows all five cases: confident answer, ambiguous (abstain), source conflict,
-superseded-by-bulletin, and multi-stage torque-to-yield.
+- **Unit cross-check at ingest.** GM prints both N·m and lb-ft, so every row self-validates.
+  This found **9 genuine defects in the source document** — six are mislabelled units like
+  `25 N·m 18 lb in` where 25 N·m is 18.4 lb **ft**. None were auto-corrected; each is shown with
+  a "source is internally inconsistent here" banner.
+- **Deterministic position gate.** Say "lower" and a candidate marked "upper" cannot be
+  auto-answered, whatever it scored. Adjacent-bolt confusion is the only realistic wrong-answer
+  mode and the one a similarity threshold is blind to.
+- **Unknown-vocabulary gate.** If a third of the words you typed appear nowhere in this
+  vehicle's data and have no synonym mapping, it won't answer. Added after the golden set caught
+  a C3 "trailing arm pivot bolt" returning a headlamp actuator nut.
+- **TSB supersession.** A 2005 GM bulletin revised the C5 ball-joint specs. The manual's value
+  is wrong and looks maximally trustworthy. The revised value is served; the stale one is shown
+  struck through so you recognise it if you've seen it elsewhere.
+- **Multi-stage and torque-to-yield modelling.** LS1 head bolts are 30 N·m → +90° → +90°/+50°
+  and single-use. A bare number is itself a wrong answer there.
+- **Conflict detection.** Disagreeing values are flagged in the data, so the system *knows* and
+  names each origin instead of waffling.
+- **Output guard.** Every numeral on screen must exist in the record it came from, or the card
+  refuses to render. Deliberately redundant — its first live act was catching a bug in its own
+  author's mockup data.
+- **Zero-wrong-answers CI gate.** Any wrong answer fails the build. Abstain rate is a UX metric;
+  wrong-answer rate is a hard constraint.
 
-## Set up the database
+See **[10 — What Testing Found](docs/10-what-testing-found.md)** for every defect the tests
+caught that inspection missed — including three separate ways the semantic layer could produce a
+wrong answer, which no amount of re-reading the code would have revealed.
+
+---
+
+## Run it
 
 ```bash
-python db/migrate.py            # creates data/torque.db
-python db/migrate.py --status   # list applied / pending migrations
+cd website
+npm install
+npm run dev            # http://localhost:3000
+npm run test:all       # typecheck + 57 unit + build + 21 e2e
 ```
 
-`sqlite-vec` is optional until P2 — lexical search and the full schema work without it.
+Rebuild the data (only when a source or overlay changes):
+
+```bash
+pip install pypdf
+python ingest/parse_fsm.py       # PDF text -> data/parsed/
+python ingest/build_dataset.py   # parsed + overlay -> website/data/
+```
+
+## Deploy
+
+Vercel, framework preset **Next.js**, root directory **`website`**. `output: "export"` means
+static files on the CDN — no serverless functions, no env vars, no secrets, free tier.
+
+---
 
 ## Documentation
 
 | Doc | |
 |---|---|
 | [01 — Overview](docs/01-overview.md) | The problem, prior art, end-to-end flow |
-| [02 — Data Sources](docs/02-data-sources.md) | Where numbers come from, provenance tiers, the agreement rule |
-| [03 — Data Model](docs/03-data-model.md) | Schema, and why a spec is not `(name, value)` |
+| [02 — Data Sources](docs/02-data-sources.md) | Provenance tiers and the agreement rule |
+| [03 — Data Model](docs/03-data-model.md) | Why a spec is not `(name, value)` |
 | [04 — Accuracy Architecture](docs/04-accuracy-architecture.md) | The rules, the two axes, failure modes |
 | [05 — Retrieval & Abstain](docs/05-retrieval-and-abstain.md) | Query pipeline and the gate |
-| [06 — Ingestion](docs/06-ingestion.md) | Extraction, validators, human review |
-| [07 — Stack & Running](docs/07-stack-and-running.md) | Local stack, garage use |
+| [06 — Ingestion](docs/06-ingestion.md) | Extraction and validators |
+| [07 — Stack & Running](docs/07-stack-and-running.md) | **Current** stack, running, deploying |
 | [08 — Eval Harness](docs/08-eval-harness.md) | How accuracy stays measurable |
 | [09 — Roadmap](docs/09-roadmap.md) | Phases and non-goals |
+| [10 — What Testing Found](docs/10-what-testing-found.md) | **Every defect the tests caught** |
+
+Docs 03, 05, 06, 08 and 09 were written for the original local-first design and carry a banner
+saying so. Their reasoning is why the current design looks as it does; their named technologies
+are superseded by 07.
+
+## Known limitations
+
+- **C3 is empty.** Not an oversight — its sources systematically disagree on safety-critical
+  fasteners (the upper ball joint nut is cited as 45, 50 **and** 80 lb-ft), and the most-copied
+  C3 spec list turns out to be one vendor catalog mirrored four times. Resolving it needs the
+  1979 GM shop manual. See [research/c3-1979/](research/c3-1979/README.md).
+- **No diagrams yet.** The "which bolt is it" problem is only half solved without them.
+- **Semantic toggle uses concept vectors, not neural embeddings.** It is a real vector space and
+  works offline with no download, but it is not a learned sentence embedder. A drop-in hook
+  exists for one; the model files are not included.
+- **Z06 is not covered** and differs on several suspension and brake specs.
+- **Three source defects remain unresolved** — shown with warnings rather than guessed at.
 
 ## Non-goals
 
 Automatic ingestion of arbitrary vehicles (no bulk source exists — anyone offering it is
-generating numbers) · scaling, accounts, multi-tenancy · diagnostics and repair procedures ·
-being a chatbot · always having an answer.
+generating numbers) · diagnostics and repair procedures · being a chatbot · always having an
+answer.
 
 The target is **never wrong**, not *never silent*.
 
 ## Data
 
-Source documents are copyrighted service manuals, kept in `data/sources/` and gitignored.
-Personal use for your own vehicle; not redistributed.
+`data/sources/` is gitignored — those are copyrighted service documents, kept for personal use
+and not redistributed. The baked JSON in `website/data/` **is** committed: it is the product.
+
+**Verify every value against your own manual before turning a wrench.**

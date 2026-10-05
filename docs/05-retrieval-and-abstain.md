@@ -1,5 +1,12 @@
 # 05 — Retrieval & Abstain
 
+> **Superseded in part.** This document was written for the original local-first design
+> (SQLite + FastAPI + a local LLM). The brief later changed to web-only, and the shipped system
+> is a static Next.js site with no backend, no database and no language model — see
+> [07 — Stack & Running](07-stack-and-running.md). The *reasoning* below still holds and is why
+> the current design looks as it does; the named technologies do not. Where this document and
+> [10 — What Testing Found](10-what-testing-found.md) disagree, 10 is correct.
+
 ## The pipeline
 
 ```

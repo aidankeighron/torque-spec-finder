@@ -1,0 +1,33 @@
+{
+  "vehicle": {
+    "id": "c3-1979-base-auto",
+    "label": "1979 Chevrolet Corvette — Base, Automatic",
+    "shortLabel": "1979 C3 Base Auto",
+    "platform": "C3 Corvette",
+    "generation": "C3",
+    "year": 1979,
+    "make": "Chevrolet",
+    "model": "Corvette",
+    "trim": "Base",
+    "engine": "L48 350 ci V8",
+    "transmissions": ["TH350 3-speed automatic"],
+    "yearsCovered": "1979",
+    "notes": "Fully segregated dataset. Ingest in progress — specs are sourced from independent published references and each is cited on its record."
+  },
+  "sources": [],
+  "assemblies": [],
+  "fasteners": [],
+  "notIngested": [],
+  "stats": {
+    "fasteners": 0,
+    "assemblies": 0,
+    "conflicts": 0,
+    "multiStage": 0,
+    "sourceDefects": 0,
+    "withWarnings": 0,
+    "tierA": 0,
+    "tierB": 0,
+    "superseded": 0,
+    "corroborated": 0
+  }
+}

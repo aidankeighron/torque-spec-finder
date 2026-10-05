@@ -1,14 +1,26 @@
 # 09 — Roadmap
 
+> **Superseded in part.** This document was written for the original local-first design
+> (SQLite + FastAPI + a local LLM). The brief later changed to web-only, and the shipped system
+> is a static Next.js site with no backend, no database and no language model — see
+> [07 — Stack & Running](07-stack-and-running.md). The *reasoning* below still holds and is why
+> the current design looks as it does; the named technologies do not. Where this document and
+> [10 — What Testing Found](10-what-testing-found.md) disagree, 10 is correct.
+
 ## Phases
 
-### P0 — Foundation ✅ *(current)*
+### P0 — Foundation ✅
 
 - `docs/` — this documentation set
 - `db/migrations/001_init.sql` + `db/migrate.py`
 - `website/` — static mockup of all five UI states, mock data, no backend
 
 Deliverable: the design is written down and the UI is agreed before any data work.
+
+> **Status note.** The brief changed mid-build from a local-first tool to a web-only static site,
+> and the uploaded FSM document let the C5 ingest jump straight to full coverage. Actual delivery
+> order was: P0 → full C5 ingest → retrieval + gate → eval harness → E2E. The C3 is paused with
+> its research archived in [`research/c3-1979/`](../research/c3-1979/README.md).
 
 ### P1 — Pilot ingest: rear suspension
 

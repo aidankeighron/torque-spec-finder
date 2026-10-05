@@ -42,8 +42,8 @@ tracking, and an explicit "I don't know" state. That gap is this project.
 
 ## The core principle
 
-> **The LLM never produces, repeats, or touches a number. It only helps choose which database
-> row you meant. The number is rendered server-side from typed columns by a string template.**
+> **Nothing generative ever produces, repeats, or touches a number. Search only selects which
+> stored record you meant. The number is rendered from typed fields by a string template.**
 
 Every design decision in these docs follows from that one rule. See
 [04 — Accuracy Architecture](04-accuracy-architecture.md).
@@ -63,7 +63,7 @@ Every design decision in these docs follows from that one rule. See
                 │ top ~20 candidates
                 ▼
   ┌─────────────────────────────────────────────┐
-  │  Cross-encoder rerank                       │
+  │  Explainable rerank (coverage, BM25, fuzzy) │
   └─────────────────────────────────────────────┘
                 │
                 ▼
@@ -71,15 +71,14 @@ Every design decision in these docs follows from that one rule. See
   │  ABSTAIN GATE                               │
   │   · score + margin thresholds (calibrated)  │
   │   · position gate   (rear? lower? LH?)      │   ← deterministic, not a score
-  │   · LLM verifier    (yes | no | unsure)     │
+  │   · unknown-vocabulary gate                 │   ← deterministic
   │   · not flagged conflicting                 │
-  │   · provenance tier acceptable              │
   └─────────────────────────────────────────────┘
           │ all pass                  │ anything fails
           ▼                           ▼
    Single answer card          Ranked candidate list
-   rendered from DB            + diagram — you pick
-   columns, no LLM             (your pick becomes an alias)
+   rendered from typed         with specs visible — you pick
+   fields, no LLM              (no LLM anywhere in this flow)
                 │
                 ▼
    OUTPUT GUARD: every numeral in the response must exist
@@ -110,6 +109,7 @@ Every design decision in these docs follows from that one rule. See
 | [04 — Accuracy Architecture](04-accuracy-architecture.md) | The rules, the two confidence axes, failure modes |
 | [05 — Retrieval & Abstain](05-retrieval-and-abstain.md) | The query pipeline and the gate |
 | [06 — Ingestion](06-ingestion.md) | Extraction, validators, human review |
-| [07 — Stack & Running](07-stack-and-running.md) | Fully-local stack, how to run it, garage use |
+| [07 — Stack & Running](07-stack-and-running.md) | Static Next.js stack, how to run it, Vercel deploy |
 | [08 — Eval Harness](08-eval-harness.md) | How accuracy stays a property instead of a hope |
 | [09 — Roadmap](09-roadmap.md) | Build phases |
+| [10 — What Testing Found](10-what-testing-found.md) | Every defect the tests caught that inspection missed |

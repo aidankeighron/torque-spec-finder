@@ -1,0 +1,678 @@
+{
+  "_readme": [
+    "Overlay applied on top of the machine-extracted FSM rows for the 2003 C5.",
+    "Two kinds of entry:",
+    "  supersessions  - a GM bulletin that REVISED the FSM value. The FSM number",
+    "                   is real, published, and WRONG. Without this overlay the",
+    "                   site would serve a stale value that looks maximally",
+    "                   trustworthy by every other signal.",
+    "  corroborations - independent sources that agree with the FSM value. Two or",
+    "                   more independent agreements promote a row from tier B to A.",
+    "Every entry cites a retrievable URL. Nothing here was inferred or estimated;",
+    "where sources disagreed the disagreement is recorded rather than resolved."
+  ],
+  "sources": [
+    {
+      "id": "gm-tsb-05-03-08-004",
+      "tier": "A",
+      "kind": "tsb",
+      "title": "GM Bulletin 05-03-08-004 — Revised Ball Joint Stud Nut Tightening Specifications (1997-2005 Corvette)",
+      "publisher": "General Motors",
+      "revision": "2005-03-31",
+      "url": "https://www.corvetteactioncenter.com/tech/knowledgebase/article/1997-2005-corvette-service-bulletin-revised-ball-joint-torque-specs-355.html",
+      "note": "Revises the upper and lower ball joint stud nut specs in the Front and Rear Suspension sub-sections of the service manual. The bulletin does not reprint the prior values."
+    },
+    {
+      "id": "gm-tsb-07-06-01-002",
+      "tier": "A",
+      "kind": "tsb",
+      "title": "GM Bulletin 07-06-01-002 (Doc ID 1912616) — New Connecting Rod Bolt Torque Specification",
+      "publisher": "General Motors",
+      "revision": "2007-03-05",
+      "url": "https://simple-engineering.com/wp-content/uploads/2024/01/Document-ID_-1912616.pdf",
+      "note": "Applies to 1997-2008 Chevrolet Corvette (excluding LS7). Second-pass value increased from 75 degrees to 85 degrees, using the J 45059 Angle Meter."
+    },
+    {
+      "id": "gm-tsb-02-03-10-008",
+      "tier": "A",
+      "kind": "tsb",
+      "title": "GM Bulletin 02-03-10-008 — Recommended Wheel Nut Torque Specifications (2003 Corvette)",
+      "publisher": "General Motors",
+      "revision": "2002-12-17",
+      "url": "https://www.corvetteactioncenter.com/tech/knowledgebase/article/2003-corvette-service-bulletin-info-recommended-wheel-nut-bolt-torque-specifications-368.html",
+      "note": "Informational, not a revision. 2003 Corvette: 5 x M12 x 1.5, BCD 120.65 mm, 19 mm hex, service torque 140 N-m (100 lb ft)."
+    },
+    {
+      "id": "elite-c5-torque-values",
+      "tier": "C",
+      "kind": "secondary",
+      "title": "Elite Engineering — C5 Torque Values (David Farmer community spec sheet)",
+      "publisher": "Elite Engineering",
+      "revision": "pre-2005",
+      "url": "https://www.eliteengineeringusa.com/template/pdf/C5_Torque_Values.pdf",
+      "note": "FSM-derived transcription. Pre-2005 vintage, so it carries the ORIGINAL ball joint specs."
+    },
+    {
+      "id": "cwc-c5-torque-values",
+      "tier": "C",
+      "kind": "secondary",
+      "title": "Corvette Web Central — C5 Corvette Torque Values",
+      "publisher": "Corvette Web Central",
+      "revision": "post-2005",
+      "url": "https://www.corvette-web-central.com/support-files/c5corvettetorquevalues.pdf",
+      "note": "Same base document as the Elite sheet but a post-TSB vintage, so it carries the REVISED ball joint specs. Not independent of Elite, but the delta between them is a clean before/after snapshot of TSB 05-03-08-004."
+    },
+    {
+      "id": "vansteel-torque-specs",
+      "tier": "D",
+      "kind": "community",
+      "title": "Van Steel — Torque Specs (C5/C6)",
+      "publisher": "Van Steel",
+      "url": "https://www.vansteel.com/pages/torque-specs",
+      "note": "CAUTION: interleaves OE specs with Van Steel / QA1 / Wilwood aftermarket values in one table. Only rows marked factory, or matching another source, are usable as OE corroboration."
+    },
+    {
+      "id": "summit-ls-gen3-specs",
+      "tier": "C",
+      "kind": "secondary",
+      "title": "Summit Racing — Chevrolet LS Gen. 3 Aluminum Block Torque Specs",
+      "publisher": "Summit Racing",
+      "url": "https://help.summitracing.com/knowledgebase/article/HE-05189/en-us",
+      "note": "Covers LS1/LS6/LM4/L33 specifically, with bolt lengths called out."
+    }
+  ],
+  "supersessions": [
+    {
+      "matchName": "Lower Control Arm Ball Joint Stud Nut",
+      "matchAssembly": "Chassis > Front Suspension",
+      "bulletinSourceId": "gm-tsb-05-03-08-004",
+      "newStages": [
+        {
+          "label": "First Pass",
+          "kind": "torque",
+          "primary": "30 N·m",
+          "secondary": "22 lb ft",
+          "detail": "1997-2005"
+        },
+        {
+          "label": "Final Pass",
+          "kind": "angle",
+          "primary": "+180°",
+          "angle": 180,
+          "detail": "1997-2005"
+        }
+      ],
+      "note": "Bulletin 05-03-08-004 revised this spec for 1997-2005. Corroborated independently by the Corvette Web Central sheet and by Van Steel, which both publish +180 degrees for the lower ball joints."
+    },
+    {
+      "matchName": "Lower Control Arm Ball Joint Stud Nut",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "bulletinSourceId": "gm-tsb-05-03-08-004",
+      "newStages": [
+        {
+          "label": "First Pass",
+          "kind": "torque",
+          "primary": "30 N·m",
+          "secondary": "22 lb ft",
+          "detail": "1997-2005"
+        },
+        {
+          "label": "Final Pass",
+          "kind": "angle",
+          "primary": "+180°",
+          "angle": 180,
+          "detail": "1997-2005"
+        }
+      ],
+      "note": "Bulletin 05-03-08-004 revised this spec for 1997-2005. The manual's 3 1/2 flats second pass is withdrawn."
+    },
+    {
+      "matchName": "Upper Control Arm Ball Joint Stud Nut",
+      "matchAssembly": "Chassis > Front Suspension",
+      "bulletinSourceId": "gm-tsb-05-03-08-004",
+      "newStages": [
+        {
+          "label": "First Pass",
+          "kind": "torque",
+          "primary": "20 N·m",
+          "secondary": "15 lb ft",
+          "detail": "1997-2004"
+        },
+        {
+          "label": "Final Pass",
+          "kind": "angle",
+          "primary": "+250°",
+          "angle": 250,
+          "detail": "1997-2004"
+        }
+      ],
+      "note": "Bulletin 05-03-08-004 revised this spec. For 1997-2004 the final torque pass is REMOVED and replaced by a 250 degree turn. 2005 cars use 30 N·m (22 lb ft) + 225 degrees instead."
+    },
+    {
+      "matchName": "Upper Control Arm Ball Joint Stud Nut",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "bulletinSourceId": "gm-tsb-05-03-08-004",
+      "newStages": [
+        {
+          "label": "First Pass",
+          "kind": "torque",
+          "primary": "20 N·m",
+          "secondary": "15 lb ft",
+          "detail": "1997-2004"
+        },
+        {
+          "label": "Final Pass",
+          "kind": "angle",
+          "primary": "+250°",
+          "angle": 250,
+          "detail": "1997-2004"
+        }
+      ],
+      "note": "Bulletin 05-03-08-004 revised this spec. For 1997-2004 the manual's final 55 N·m (41 lb ft) pass is REMOVED; the 250 degree turn becomes the final pass. 2005 cars use 30 N·m (22 lb ft) + 195 degrees instead."
+    },
+    {
+      "matchName": "Connecting Rod Bolts",
+      "matchAssembly": "Engine > Engine Mechanical",
+      "bulletinSourceId": "gm-tsb-07-06-01-002",
+      "newStages": [
+        {
+          "label": "First Pass",
+          "kind": "torque",
+          "primary": "20 N·m",
+          "secondary": "15 lb ft",
+          "detail": ""
+        },
+        {
+          "label": "Final Pass",
+          "kind": "angle",
+          "primary": "+85°",
+          "angle": 85,
+          "detail": "using the J 45059 Angle Meter"
+        }
+      ],
+      "note": "Bulletin 07-06-01-002 increased the second pass from 75 to 85 degrees for 1997-2008 Corvette (excluding LS7). Corroborated by Summit Racing and Michigan Motorsports. Note that many community spec sheets still publish the superseded 75 degree value."
+    }
+  ],
+  "corroborations": [
+    {
+      "matchName": "Wheel Nuts In Sequence",
+      "sourceId": "gm-tsb-02-03-10-008",
+      "value": "140 N·m / 100 lb ft",
+      "agrees": true,
+      "note": "GM bulletin gives the same service torque and the fastener spec: 5 x M12 x 1.5, 19 mm hex."
+    },
+    {
+      "matchName": "Upper Control Arm Mounting Bolts",
+      "matchAssembly": "Chassis > Front Suspension",
+      "sourceId": "vansteel-torque-specs",
+      "value": "48 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Upper Control Arm Mounting Bolts",
+      "matchAssembly": "Chassis > Front Suspension",
+      "sourceId": "elite-c5-torque-values",
+      "value": "65 N·m / 48 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Stabilizer Shaft Link Nuts",
+      "matchAssembly": "Chassis > Front Suspension",
+      "sourceId": "elite-c5-torque-values",
+      "value": "72 N·m / 53 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Stabilizer Shaft Link Nuts",
+      "matchAssembly": "Chassis > Front Suspension",
+      "sourceId": "vansteel-torque-specs",
+      "value": "53 ft/lbs",
+      "agrees": true
+    },
+    {
+      "matchName": "Stabilizer Shaft Link Nuts",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "sourceId": "elite-c5-torque-values",
+      "value": "72 N·m / 53 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Stabilizer Shaft Link Nuts",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "sourceId": "vansteel-torque-specs",
+      "value": "53 ft/lbs",
+      "agrees": true
+    },
+    {
+      "matchName": "Stabilizer Shaft Insulator Clamp Bolts",
+      "sourceId": "elite-c5-torque-values",
+      "value": "58 N·m / 43 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Shock Absorber Lower Mounting Bolt",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "sourceId": "elite-c5-torque-values",
+      "value": "220 N·m / 162 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Shock Absorber Lower Mounting Bolt",
+      "matchAssembly": "Chassis > Rear Suspension",
+      "sourceId": "vansteel-torque-specs",
+      "value": "162 ft/lbs",
+      "agrees": true
+    },
+    {
+      "matchName": "Shock Absorber Upper Mounting Nut",
+      "matchAssembly": "Chassis > Front Suspension",
+      "sourceId": "elite-c5-torque-values",
+      "value": "26 N·m / 19 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Wheel Hub/Bearing Mounting Bolts",
+      "sourceId": "elite-c5-torque-values",
+      "value": "130 N·m / 96 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Wheel Hub Mounting Bolts",
+      "sourceId": "elite-c5-torque-values",
+      "value": "130 N·m / 96 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Lower Control Arm (Front) Cam Bolt Nut",
+      "sourceId": "elite-c5-torque-values",
+      "value": "145 N·m / 107 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Lower Control Arm (Rear) Cam Bolt Nut",
+      "sourceId": "elite-c5-torque-values",
+      "value": "95 N·m / 70 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Brake Caliper Guide Pin Bolt",
+      "sourceId": "elite-c5-torque-values",
+      "value": "31 N·m / 23 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Brake Caliper Bleed Screw",
+      "sourceId": "elite-c5-torque-values",
+      "value": "12 N·m / 106 lb in",
+      "agrees": true
+    },
+    {
+      "matchName": "Front Brake Caliper Mounting Bracket Bolt",
+      "sourceId": "elite-c5-torque-values",
+      "value": "175 N·m / 125 lb ft",
+      "agrees": true,
+      "note": "Four sources reproduce 125 lb ft, which suggests a shared transcription lineage rather than true independence. 175 N·m converts to 129 lb ft, so the printed pair is internally loose."
+    },
+    {
+      "matchName": "Rear Brake Caliper Mounting Bracket Bolt",
+      "sourceId": "elite-c5-torque-values",
+      "value": "175 N·m / 125 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Rear Drive Shaft Spindle Nut",
+      "sourceId": "elite-c5-torque-values",
+      "value": "160 N·m / 118 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Cylinder Head Bolts",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "22 lb ft / +90° / +90° long M11, +50° medium M11, 22 lb ft M8",
+      "agrees": true,
+      "note": "Summit lists bolt lengths explicitly: M11 x 155.5 gets 22 lb ft then 90 then 90; M11 x 101.0 gets 22 lb ft then 50; M8 x 46.0 gets 22 lb ft."
+    },
+    {
+      "matchName": "Crankshaft Balancer Bolt",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "240 lb ft install pass (old bolt), then 37 lb ft + 140° on a NEW bolt",
+      "agrees": true
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Bolts - Inner Bolts",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "15 lb ft + 80°",
+      "agrees": true
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Studs - Outer Studs",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "15 lb ft + 53°",
+      "agrees": true
+    },
+    {
+      "matchName": "Water Pump Bolt",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "11 lb ft then 22 lb ft",
+      "agrees": true
+    },
+    {
+      "matchName": "Camshaft Sprocket Bolts",
+      "sourceId": "summit-ls-gen3-specs",
+      "value": "26 lb ft",
+      "agrees": true
+    }
+  ],
+  "_aliasesReadme": [
+    "Slang and common names that do NOT appear anywhere in GM's wording, so no",
+    "amount of lexical or synonym matching can reach the record without them.",
+    "'Lug nut' is the clearest case: the FSM says 'Wheel Nuts' and never 'lug',",
+    "which let 'Steering Wheel Nut' tie with the real wheel nut record.",
+    "These are seeded by hand; the app also learns aliases when you pick from an",
+    "abstain list. Aliases only affect RETRIEVAL — they never touch a value."
+  ],
+  "aliases": [
+    {
+      "matchName": "Wheel Nuts In Sequence",
+      "terms": [
+        "lug nut",
+        "lug nuts",
+        "lugnut",
+        "lugnuts",
+        "wheel lug nut",
+        "lug bolts"
+      ]
+    },
+    {
+      "matchName": "Stabilizer Shaft Link Nuts",
+      "terms": [
+        "sway bar end link",
+        "sway bar link",
+        "end link nut",
+        "drop link"
+      ]
+    },
+    {
+      "matchName": "Stabilizer Shaft Insulator Clamp Bolts",
+      "terms": [
+        "sway bar bushing bracket",
+        "sway bar frame mount",
+        "sway bar clamp"
+      ]
+    },
+    {
+      "matchName": "Stabilizer Shaft Insulator (Lower) Clamp Nut",
+      "terms": [
+        "sway bar bushing clamp lower",
+        "sway bar lower clamp"
+      ]
+    },
+    {
+      "matchName": "Stabilizer Shaft Insulator (Upper) Clamp Bolt",
+      "terms": [
+        "sway bar bushing clamp upper",
+        "sway bar upper clamp"
+      ]
+    },
+    {
+      "matchName": "Exhaust Manifold Bolt",
+      "terms": [
+        "header bolt",
+        "header bolts",
+        "headers"
+      ]
+    },
+    {
+      "matchName": "Crankshaft Balancer Bolt",
+      "terms": [
+        "crank bolt",
+        "crank pulley bolt",
+        "damper bolt",
+        "harmonic balancer bolt"
+      ]
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Bolts - Inner Bolts",
+      "terms": [
+        "main cap bolt",
+        "main bolts",
+        "main bearing bolt"
+      ]
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Studs - Outer Studs",
+      "terms": [
+        "main cap stud",
+        "outer main stud"
+      ]
+    },
+    {
+      "matchName": "Connecting Rod Bolts",
+      "terms": [
+        "rod bolt",
+        "rod cap bolt",
+        "con rod bolt"
+      ]
+    },
+    {
+      "matchName": "Valve Rocker Arm Cover Bolts",
+      "terms": [
+        "valve cover bolt",
+        "rocker cover bolt",
+        "cam cover bolt"
+      ]
+    },
+    {
+      "matchName": "Pinion Nut",
+      "terms": [
+        "diff pinion nut",
+        "rear end pinion nut",
+        "pinion yoke nut"
+      ]
+    },
+    {
+      "matchName": "Ring Gear Bolts",
+      "terms": [
+        "crown wheel bolt",
+        "diff ring gear"
+      ]
+    },
+    {
+      "matchName": "Cover Bolts and Stud",
+      "terms": [
+        "diff cover bolt",
+        "differential cover",
+        "rear end cover"
+      ]
+    },
+    {
+      "matchName": "Rear Drive Shaft Spindle Nut",
+      "terms": [
+        "rear axle nut",
+        "rear hub nut",
+        "halfshaft nut"
+      ]
+    },
+    {
+      "matchName": "Front Brake Caliper Mounting Bracket Bolt",
+      "terms": [
+        "front caliper bracket bolt",
+        "front caliper mount"
+      ]
+    },
+    {
+      "matchName": "Rear Brake Caliper Mounting Bracket Bolt",
+      "terms": [
+        "rear caliper bracket bolt",
+        "rear caliper mount"
+      ]
+    },
+    {
+      "matchName": "Brake Caliper Inlet Fitting Bolt",
+      "terms": [
+        "banjo bolt",
+        "brake hose bolt",
+        "caliper hose fitting"
+      ]
+    },
+    {
+      "matchName": "Brake Caliper Guide Pin Bolt",
+      "terms": [
+        "caliper slide pin",
+        "caliper bolt",
+        "guide pin"
+      ]
+    },
+    {
+      "matchName": "Wheel Hub/Bearing Mounting Bolts",
+      "terms": [
+        "front hub bolt",
+        "front wheel bearing bolt"
+      ]
+    },
+    {
+      "matchName": "Wheel Hub Mounting Bolts",
+      "terms": [
+        "rear hub bolt",
+        "rear wheel bearing bolt"
+      ]
+    },
+    {
+      "matchName": "Intake Manifold Bolts",
+      "terms": [
+        "intake bolt",
+        "plenum bolt",
+        "inlet manifold bolt"
+      ]
+    },
+    {
+      "matchName": "Water Pump Bolt",
+      "terms": [
+        "coolant pump bolt"
+      ]
+    },
+    {
+      "matchName": "Water Inlet Housing Bolts",
+      "terms": [
+        "thermostat housing bolt",
+        "thermostat bolt",
+        "water neck"
+      ]
+    },
+    {
+      "matchName": "Engine Flywheel Bolts",
+      "terms": [
+        "flexplate bolt",
+        "flywheel bolt"
+      ]
+    },
+    {
+      "matchName": "Clutch Pressure Plate Bolts",
+      "terms": [
+        "pressure plate bolt",
+        "clutch cover bolt"
+      ]
+    },
+    {
+      "matchName": "Engine Mount Bracket Bolt",
+      "terms": [
+        "motor mount bolt",
+        "engine mount bolt"
+      ]
+    },
+    {
+      "matchName": "Power Steering Gear Mounting Bolts",
+      "terms": [
+        "steering rack bolt",
+        "rack bolt",
+        "steering gear bolt"
+      ]
+    },
+    {
+      "matchName": "Outer Tie Rod End Stud Nut",
+      "terms": [
+        "tie rod nut",
+        "outer tie rod"
+      ]
+    },
+    {
+      "matchName": "Oil Pan M8 Bolts - Oil Pan-to-Engine Block and Oil Pan-to-Front Cover",
+      "terms": [
+        "oil pan bolt",
+        "sump bolt"
+      ]
+    },
+    {
+      "matchName": "Oil Pan Drain Plug",
+      "terms": [
+        "drain plug",
+        "sump plug",
+        "oil plug"
+      ]
+    }
+  ],
+  "singleUse": [
+    {
+      "matchName": "Cylinder Head Bolts",
+      "reason": "Stock-style LS cylinder head bolts are torque-to-yield and must never be reused.",
+      "sourceUrl": "https://help.summitracing.com/knowledgebase/article/SR-05187/en-us"
+    },
+    {
+      "matchName": "Connecting Rod Bolts",
+      "reason": "Torque-to-yield. Any fastener finished by an angle spec stretches permanently.",
+      "sourceUrl": "https://help.summitracing.com/knowledgebase/article/HE-05189/en-us"
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Bolts - Inner Bolts",
+      "reason": "Torque-to-yield (angle-finished).",
+      "sourceUrl": "https://help.summitracing.com/knowledgebase/article/HE-05189/en-us"
+    },
+    {
+      "matchName": "Crankshaft Bearing Cap Studs - Outer Studs",
+      "reason": "Torque-to-yield (angle-finished).",
+      "sourceUrl": "https://help.summitracing.com/knowledgebase/article/HE-05189/en-us"
+    },
+    {
+      "matchName": "Crankshaft Balancer Bolt",
+      "reason": "Torque-to-yield. The installation pass uses the OLD bolt; a NEW bolt must then be fitted for the 37 lb ft + 140 degree sequence.",
+      "sourceUrl": "https://help.summitracing.com/knowledgebase/article/HE-05189/en-us"
+    }
+  ],
+  "disagreements": [
+    {
+      "matchName": "Shock Absorber Lower Mounting Nuts",
+      "matchAssembly": "Chassis > Front Suspension",
+      "fsmValue": "28 N·m / 21 lb ft",
+      "otherValue": "25 ft/lbs",
+      "otherSourceId": "vansteel-torque-specs",
+      "assessment": "The FSM value is corroborated by two further sources. The Van Steel page covers 1997-2013 and mixes aftermarket coilover hardware, so its outlier is most likely not an OE spec."
+    }
+  ],
+  "notIngested": [
+    {
+      "item": "Seat belt retractor and anchor torques circulating on CorvetteForum",
+      "reason": "The originating thread's author states a member 'thought' these were right and 'wasn't sure', and the thread closes without confirmation. Restraint-system fastener — not propagated without a primary source.",
+      "url": "https://www.corvetteforum.com/forums/c5-tech/3645641-seat-belt-torque-specs-confirmation.html"
+    },
+    {
+      "item": "Steering intermediate shaft lower coupling bolt",
+      "reason": "Two retrievable forum posts say 25 lb ft with threadlocker; an unretrievable source claims 37 lb ft and single-use. Unresolved contradiction on a steering fastener — neither value ingested.",
+      "url": "https://www.corvetteforum.com/forums/c5-tech/451402-torque-setting-for-steering-shaft-bolt.html"
+    },
+    {
+      "item": "Steering gear / rack-to-crossmember bolts (74 lb ft)",
+      "reason": "Single uncorroborated forum post on a steering fastener.",
+      "url": "https://www.corvetteforum.com/forums/c5-tech/1768850-torque-spec-for-steering-rack-to-subframe-bolts.html"
+    },
+    {
+      "item": "Exhaust manifold bolt revision (GM 06-06-01-026, 10 N·m then 20 N·m with threadlocker)",
+      "reason": "Quoted second-hand on a forum; primary bulletin text could not be retrieved. The FSM's 15 then 25 N·m is retained and this is noted as unconfirmed.",
+      "url": "https://ls1tech.com/forums/generation-iii-external-engine/1096114-torque-specs.html"
+    },
+    {
+      "item": "Crankshaft balancer bolt at 24 lb ft (My Pro Street)",
+      "reason": "Off by roughly 10x against six other sources. Physically implausible for crank balancer retention.",
+      "url": "https://my.prostreetonline.com/2013/12/05/faq-ls1-torque-specifications/"
+    }
+  ]
+}
