@@ -25,6 +25,51 @@ export const TIER_BLURB: Record<Tier, string> = {
   E: "A generic value by thread size and grade. NOT specific to this vehicle.",
 };
 
+/** One column of the unit row. */
+export interface UnitColumn {
+  /** Number only, e.g. "100", "8.9", "8-14". */
+  value: string;
+  /** Unit label, e.g. "lb ft". */
+  unit: string;
+  /** false when the value was converted at ingest rather than printed by GM. */
+  printed: boolean;
+}
+
+/** Display order: foot-pounds, then inch-pounds, then Newton-metres.
+ *
+ *  lb-ft first because that is what the wrench in your hand reads. N·m last
+ *  because it is the source's primary and therefore the one you'd only check
+ *  when cross-referencing the manual. */
+const UNIT_ORDER = ["lb ft", "lb in", "N·m"] as const;
+
+function splitValue(text: string): { value: string; unit: string } | null {
+  // "100 lb ft" -> { value: "100", unit: "lb ft" }; "+90°" -> null
+  const m = /^([\d.\-–]+)\s*(N·m|lb ft|lb in)$/.exec(text.trim());
+  return m ? { value: m[1], unit: m[2] } : null;
+}
+
+/**
+ * The unit columns for one torque stage, in display order.
+ *
+ * Returns [] for angle and turn-count stages, which have no units — those are
+ * rendered as their own thing rather than squeezed into this layout.
+ */
+export function unitColumns(s: Stage): UnitColumn[] {
+  if (s.kind !== "torque") return [];
+  const found = new Map<string, UnitColumn>();
+
+  for (const text of [s.primary, s.secondary]) {
+    if (!text) continue;
+    const parsed = splitValue(text);
+    if (parsed) found.set(parsed.unit, { ...parsed, printed: true });
+  }
+  if (s.derived && !found.has(s.derived.unit)) {
+    found.set(s.derived.unit, { value: s.derived.value, unit: s.derived.unit, printed: false });
+  }
+
+  return UNIT_ORDER.map((u) => found.get(u)).filter((c): c is UnitColumn => !!c);
+}
+
 /** The primary line, e.g. "80 N·m" / "60 lb ft", or a stage count. */
 export function headline(f: Fastener): { primary: string; secondary: string | null } {
   if (f.stages.length === 1) {
@@ -48,14 +93,18 @@ export function stageName(s: Stage): string {
   return s.no === 1 ? "Torque" : `Stage ${s.no}`;
 }
 
-/** Short one-line summary used in candidate lists. */
+/** One printed unit for a stage, preferring lb-ft, then lb-in, then N·m.
+ *  Used in lists where there is only room for one figure. */
+export function compactValue(s: Stage): string {
+  const cols = unitColumns(s).filter((c) => c.printed);
+  if (!cols.length) return s.primary;
+  return `${cols[0].value} ${cols[0].unit}`;
+}
+
+/** Short one-line summary used in candidate lists, nearby, and browse. */
 export function compactSpec(f: Fastener): string {
   if (!f.stages.length) return "—";
-  if (f.stages.length === 1) {
-    const s = f.stages[0];
-    return s.secondary ? `${s.primary} / ${s.secondary}` : s.primary;
-  }
-  return f.stages.map((s) => s.primary).join(" → ");
+  return f.stages.map((s) => compactValue(s)).join(" → ");
 }
 
 export function assemblyCrumbs(f: Fastener): string[] {
@@ -82,6 +131,7 @@ export function renderedTextForGuard(f: Fastener): string {
     h.primary,
     h.secondary ?? "",
     ...f.stages.map((s) => `${stageName(s)} ${stageLine(s)} ${s.detail}`),
+    ...f.stages.flatMap((s) => unitColumns(s).map((c) => `${c.value} ${c.unit}`)),
     f.sequenceNote,
     ...f.warnings.map((w) => w.text),
     f.provenance.verbatim,

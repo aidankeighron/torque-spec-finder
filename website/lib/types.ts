@@ -36,6 +36,18 @@ export interface Stage {
   angle: number | null;
   /** Which bolts this stage applies to, when the source qualifies it. */
   detail: string;
+  /**
+   * The English unit the source did NOT print, CONVERTED from its N·m value
+   * at ingest time.
+   *
+   * The FSM gives N·m plus exactly one of lb-ft / lb-in per row, so a third
+   * column can only ever be computed. Storing it here rather than computing it
+   * in the renderer keeps two properties intact: the output guard still sees
+   * every displayed numeral as part of the record, and the UI can mark it as
+   * approximate. Null when the conversion would be useless (a lug nut is not
+   * meaningfully "1239 lb in").
+   */
+  derived?: { value: string; unit: string } | null;
 }
 
 export interface Warning {

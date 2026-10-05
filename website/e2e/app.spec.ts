@@ -22,8 +22,14 @@ test("confident answer shows the value, both units, and provenance", async ({ pa
   const card = page.getByTestId("answer-card");
   await expect(card).toBeVisible();
   await expect(page.getByTestId("fastener-name")).toHaveText("Wheel Nuts In Sequence");
-  await expect(page.getByTestId("spec-primary")).toHaveText("140 N·m");
-  await expect(card).toContainText("100 lb ft");
+  // Units read lb-ft, then lb-in, then N·m. A lug nut has no useful lb-in
+  // conversion (it would be ~1239), so this record shows two columns.
+  const units = page.getByTestId("unit-row").first().locator(".unit");
+  await expect(units).toHaveCount(2);
+  await expect(units.nth(0).locator(".unit-value")).toHaveText("100");
+  await expect(units.nth(0).locator(".unit-label")).toContainText("lb ft");
+  await expect(units.nth(1).locator(".unit-value")).toHaveText("140");
+  await expect(units.nth(1).locator(".unit-label")).toContainText("N·m");
   // Both confidence axes must be present and separate.
   await expect(card).toContainText("Match confidence");
   await expect(card).toContainText("Source confidence");
@@ -43,10 +49,15 @@ test("the verbatim source line is viewable", async ({ page }) => {
 test("multi-stage fastener shows every stage, never a single number", async ({ page }) => {
   await look(page, "cylinder head bolts m11");
   await expect(page.getByTestId("answer-card")).toBeVisible();
-  await expect(page.getByTestId("spec-primary")).toContainText("stages");
+  await expect(page.getByTestId("stages")).toContainText("All 4 stages are required");
   const stages = page.getByTestId("stages").locator(".stage");
   await expect(stages).toHaveCount(4);
-  await expect(page.getByTestId("stages")).toContainText("30 N·m");
+  // Stage 1 is a torque with unit columns; stages 2-4 are angles.
+  const first = stages.nth(0).locator(".unit");
+  await expect(first.nth(0).locator(".unit-value")).toHaveText("22");
+  await expect(first.nth(0).locator(".unit-label")).toContainText("lb ft");
+  await expect(first.last().locator(".unit-value")).toHaveText("30");
+  await expect(first.last().locator(".unit-label")).toContainText("N·m");
   await expect(page.getByTestId("stages")).toContainText("+90°");
   await expect(page.getByTestId("stages")).toContainText("+50°");
   // And the safety warnings that make the number usable.
@@ -73,7 +84,8 @@ test("ABSTAINS on the motivating query rather than guessing", async ({ page }) =
   // Candidates must be offered, with their specs already visible.
   const cands = page.getByTestId("candidate-list").locator(".cand");
   expect(await cands.count()).toBeGreaterThan(1);
-  await expect(cands.first()).toContainText("N·m");
+  // Candidate rows lead with the printed foot-pound figure.
+  await expect(cands.first()).toContainText(/lb (ft|in)/);
 });
 
 test("picking a candidate resolves to that exact record", async ({ page }) => {
@@ -88,11 +100,12 @@ test("picking a candidate resolves to that exact record", async ({ page }) => {
 test("position words are enforced, not merely hinted", async ({ page }) => {
   await look(page, "rear shock bottom bolt");
   await expect(page.getByTestId("fastener-name")).toHaveText("Shock Absorber Lower Mounting Bolt");
-  await expect(page.getByTestId("answer-card")).toContainText("220 N·m");
+  await expect(page.getByTestId("answer-card")).toContainText("162");
+  await expect(page.getByTestId("answer-card")).toContainText("220");
   // The opposite end must give a different record, not the same one.
   await look(page, "rear shock top bolts");
   await expect(page.getByTestId("fastener-name")).toHaveText("Shock Absorber Upper Mounting Bolts");
-  await expect(page.getByTestId("answer-card")).toContainText("30 N·m");
+  await expect(page.getByTestId("answer-card")).toContainText("22");
 });
 
 test("a part this car does not have is reported as absent, not approximated", async ({ page }) => {
@@ -229,4 +242,81 @@ test("stress: XSS payloads are escaped, not executed", async ({ page }) => {
   await look(page, "<img src=x onerror=alert(1)>");
   await expect(page.locator("main")).toBeVisible();
   expect(alerted).toBe(false);
+});
+
+test("UNIT ORDER: foot-pounds, then inch-pounds, then Newton-metres", async ({ page }) => {
+  // A low-torque fastener printed in lb-in: shows the converted lb-ft FIRST,
+  // then the printed lb-in, then N·m.
+  await look(page, "caliper bleeder");
+  await expect(page.getByTestId("fastener-name")).toHaveText("Brake Caliper Bleed Screw");
+  const units = page.getByTestId("unit-row").first().locator(".unit");
+  await expect(units).toHaveCount(3);
+  await expect(units.nth(0).locator(".unit-label")).toContainText("lb ft");
+  await expect(units.nth(1).locator(".unit-label")).toContainText("lb in");
+  await expect(units.nth(2).locator(".unit-label")).toContainText("N·m");
+  await expect(units.nth(1).locator(".unit-value")).toHaveText("106");
+  await expect(units.nth(2).locator(".unit-value")).toHaveText("12");
+});
+
+test("converted values are visibly marked, printed ones are not", async ({ page }) => {
+  await look(page, "caliper bleeder");
+  const units = page.getByTestId("unit-row").first().locator(".unit");
+  const derived = units.nth(0);
+  await expect(derived).toHaveAttribute("data-printed", "false");
+  await expect(derived.locator(".unit-value")).toContainText("≈");
+  await expect(derived.locator(".unit-flag")).toHaveText("converted");
+  for (const i of [1, 2]) {
+    await expect(units.nth(i)).toHaveAttribute("data-printed", "true");
+    await expect(units.nth(i).locator(".unit-flag")).toHaveCount(0);
+  }
+});
+
+test("unit values render in white", async ({ page }) => {
+  await look(page, "lug nuts");
+  const v = page.getByTestId("unit-row").first().locator(".unit-value").first();
+  await expect(v).toHaveCSS("color", "rgb(255, 255, 255)");
+});
+
+test("unit columns sit horizontally side by side", async ({ page }) => {
+  await look(page, "caliper bleeder");
+  const units = page.getByTestId("unit-row").first().locator(".unit");
+  const boxes = await units.all();
+  const rects = await Promise.all(boxes.map((b) => b.boundingBox()));
+  // Same row: tops aligned, lefts strictly increasing.
+  for (let i = 1; i < rects.length; i++) {
+    expect(Math.abs(rects[i]!.y - rects[0]!.y)).toBeLessThan(4);
+    expect(rects[i]!.x).toBeGreaterThan(rects[i - 1]!.x);
+  }
+});
+
+test("angle stages are shown as turns, not forced into unit columns", async ({ page }) => {
+  await look(page, "front lower ball joint");
+  const rows = page.getByTestId("stages").locator(".stage");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(1)).toContainText("+180°");
+  await expect(rows.nth(1)).toContainText("turn, after the previous stage");
+});
+
+test("favicon, manifest and OG image are served", async ({ page, request }) => {
+  for (const path of ["/icon.svg", "/icon-192.png", "/favicon.ico", "/og.png", "/manifest.webmanifest"]) {
+    const res = await request.get(path);
+    expect(res.status(), path).toBe(200);
+  }
+  await page.goto("/");
+  await expect(page.locator('link[rel="icon"][href="/icon.svg"]')).toHaveCount(1);
+  await expect(page.locator('link[rel="manifest"]')).toHaveCount(1);
+});
+
+test("link preview metadata is present and absolute", async ({ page }) => {
+  await page.goto("/");
+  const og = (n: string) => page.locator(`meta[property="og:${n}"]`).first();
+  await expect(og("title")).toHaveAttribute("content", /Torque Spec Finder/);
+  await expect(og("description")).toHaveAttribute("content", /refuses to guess|traced to/);
+  // Crawlers ignore relative image URLs, so this must be absolute.
+  await expect(og("image")).toHaveAttribute("content", /^https?:\/\/.+\/og\.png$/);
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /torque/i);
 });

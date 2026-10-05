@@ -43,6 +43,10 @@ export function allowedNumerals(f: Fastener): Set<string> {
     harvest(s.primary);
     harvest(s.secondary);
     harvest(s.detail);
+    // The converted unit is part of the record, so it is allowed on screen —
+    // but only because it was computed at ingest and stored, never produced
+    // during rendering.
+    harvest(s.derived?.value);
     if (s.angle != null) allowed.add(String(s.angle));
     allowed.add(String(s.no));
   }

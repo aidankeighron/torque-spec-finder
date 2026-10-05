@@ -5,12 +5,13 @@ import {
   assemblyCrumbs,
   compactSpec,
   confidence,
-  headline,
   positionSummary,
   renderedTextForGuard,
-  stageLine,
   stageName,
+  unitColumns,
+  type UnitColumn,
 } from "@/lib/render/format";
+import type { Stage } from "@/lib/types";
 import { checkNoInventedNumbers } from "@/lib/render/guard";
 
 interface Props {
@@ -22,6 +23,53 @@ interface Props {
   showDiagnostics: boolean;
 }
 
+
+/** The torque value, as foot-pounds / inch-pounds / Newton-metres.
+ *
+ *  Converted figures carry a '≈' and a "converted" label. That distinction is
+ *  not cosmetic: GM prints only two of the three units per row, so exactly one
+ *  column on most cards was computed rather than published, and anyone about to
+ *  turn a wrench deserves to know which. */
+function UnitRow({ stage, size }: { stage: Stage; size: "large" | "small" }) {
+  const cols: UnitColumn[] = unitColumns(stage);
+
+  // Angle and turn-count stages have no units — show them as themselves.
+  if (!cols.length) {
+    return (
+      <div className={`units units-${size}`} data-testid="unit-row">
+        <div className="unit unit-bare">
+          <div className="unit-value">{stage.primary}</div>
+          <div className="unit-label">
+            {stage.kind === "angle" ? "turn, after the previous stage" : "turn count"}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`units units-${size}`} data-testid="unit-row">
+      {cols.map((c) => (
+        <div
+          className={`unit${c.printed ? "" : " unit-derived"}`}
+          key={c.unit}
+          data-unit={c.unit}
+          data-printed={c.printed}
+        >
+          <div className="unit-value">
+            {c.printed ? "" : "≈ "}
+            {c.value}
+          </div>
+          <div className="unit-label">
+            {c.unit}
+            {!c.printed && <span className="unit-flag">converted</span>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AnswerCard({
   fastener,
   diagnostics,
@@ -30,7 +78,6 @@ export function AnswerCard({
   onPick,
   showDiagnostics,
 }: Props) {
-  const h = headline(fastener);
   const conf = confidence(fastener, diagnostics);
   const pos = positionSummary(fastener);
   const multi = fastener.stages.length > 1;
@@ -85,18 +132,20 @@ export function AnswerCard({
         </div>
       </div>
 
-      <div className="spec-value" data-testid="spec-primary">
-        {h.primary}
-      </div>
-      {h.secondary && <div className="spec-alt">{h.secondary}</div>}
+      {!multi && <UnitRow stage={fastener.stages[0]} size="large" />}
 
       {multi && (
         <div className="stages" data-testid="stages">
+          <div className="stages-note">
+            All {fastener.stages.length} stages are required, in order.
+          </div>
           {fastener.stages.map((s) => (
             <div className="stage" key={`${s.no}-${s.primary}`}>
-              <span className="stage-no">{stageName(s)}</span>
-              <span className="stage-val">{stageLine(s)}</span>
-              {s.detail && <span className="stage-detail">{s.detail}</span>}
+              <div className="stage-head">
+                <span className="stage-no">{stageName(s)}</span>
+                {s.detail && <span className="stage-detail">{s.detail}</span>}
+              </div>
+              <UnitRow stage={s} size="small" />
             </div>
           ))}
         </div>

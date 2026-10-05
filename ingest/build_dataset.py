@@ -138,6 +138,46 @@ STAGE_ORDER = {"installation pass": 0, "first pass": 1, "initial pass": 1,
 
 OVERLAY = ROOT / "ingest" / "overlays" / "c5-2003-overlay.json"
 
+LBFT_PER_NM = 0.7375621
+LBIN_PER_NM = 8.850746
+
+
+def _fmt(value: float) -> str:
+    """One decimal below 10, whole numbers above — matching how a torque wrench
+    is actually readable. 8.8 lb ft is meaningful; 1234.6 lb in is not."""
+    if value < 10:
+        return f"{value:.1f}".rstrip("0").rstrip(".")
+    return f"{value:.0f}"
+
+
+def derive_unit(metric_text: str, want: str) -> str | None:
+    """Convert the source's N·m value into the English unit it did NOT print.
+
+    The FSM gives N·m plus exactly ONE of lb ft / lb in per row, so a third
+    column can only ever be computed. This is the one derived number in the
+    system, and it exists because 376 of 708 rows are printed in lb-in only —
+    which is unreadable if your wrench is in lb-ft.
+
+    Three rules keep it honest:
+      * it is computed at INGEST and stored as a typed field, so the output
+        guard still sees it as part of the record rather than as a number that
+        appeared from nowhere at render time;
+      * it is derived from the N·m value, which is the source's primary and is
+        present on every row (and is correct even on the six rows whose English
+        unit LABEL is wrong — see docs/10);
+      * the UI marks it with '≈' so a printed value and a converted one are
+        never confusable.
+    """
+    factor = LBFT_PER_NM if want == "lb ft" else LBIN_PER_NM
+    parts = [p.strip() for p in re.split(r"[-–]", metric_text) if p.strip()]
+    try:
+        vals = [float(p) for p in parts]
+    except ValueError:
+        return None
+    if not vals:
+        return None
+    return "-".join(_fmt(v * factor) for v in vals)
+
 
 def slug(s: str) -> str:
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
@@ -172,10 +212,21 @@ def apply_overlay(fasteners: list[dict], overlay: dict) -> dict:
                 for s in f["stages"])
             new_stages = []
             for i, s in enumerate(entry["newStages"], 1):
+                sec = s.get("secondary")
+                deriv = None
+                if s["kind"] == "torque" and sec:
+                    want = "lb in" if "ft" in sec else "lb ft"
+                    metric = re.sub(r"[^0-9.\-]", "", s["primary"])
+                    dv = derive_unit(metric, want)
+                    if dv and want == "lb in" and max(float(x) for x in dv.split("-")) > 400:
+                        dv = None
+                    if dv:
+                        deriv = {"value": dv, "unit": want}
                 new_stages.append({
                     "no": i, "label": s.get("label", ""), "kind": s["kind"],
-                    "primary": s["primary"], "secondary": s.get("secondary"),
+                    "primary": s["primary"], "secondary": sec,
                     "angle": s.get("angle"), "detail": s.get("detail", ""),
+                    "derived": deriv,
                 })
             f["supersedes"] = {
                 "oldStages": f["stages"],
@@ -424,10 +475,24 @@ def main() -> None:
             primary = f"+{row['angle_degrees']}°"
         else:
             primary = row["turns_text"]
+        # The English unit the source did NOT print, computed once here.
+        derived = None
+        if row["kind"] == "torque" and row["english_unit"]:
+            want = "lb in" if "ft" in row["english_unit"] else "lb ft"
+            dv = derive_unit(row["metric_text"], want)
+            # A lug nut converts to ~1239 lb in, which no inch-pound wrench can
+            # deliver and no one wants to read. Inch-pound tools top out around
+            # 300 lb in, so above that the conversion is noise rather than help.
+            if dv and want == "lb in" and max(float(x) for x in dv.split("-")) > 400:
+                dv = None
+            if dv:
+                derived = {"value": dv, "unit": want}
+
         stage = {
             "label": label,
             "kind": row["kind"],
             "primary": primary,
+            "derived": derived,
             "secondary": f"{row['english_text']} {row['english_unit']}" if row["kind"] == "torque" else None,
             "angle": row["angle_degrees"],
             "qualifier": qualifier,
@@ -497,7 +562,8 @@ def main() -> None:
             "assembly": g["assembly"],
             "position": g["position"],
             "stages": [{k: v for k, v in s.items()
-                        if k in ("no", "label", "kind", "primary", "secondary", "angle", "detail")}
+                        if k in ("no", "label", "kind", "primary", "secondary",
+                                 "angle", "detail", "derived")}
                        for s in stages],
             "multiStage": len(stages) > 1,
             "sequenceNote": sequence,

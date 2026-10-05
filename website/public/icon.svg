@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Torque Spec Finder">
+  <rect width="64" height="64" rx="13" fill="#0f1216"/>
+  <!-- hex socket, the thing this tool is about -->
+  <path d="M32 11 L50 21.5 L50 42.5 L32 53 L14 42.5 L14 21.5 Z"
+        fill="none" stroke="#4ea1ff" stroke-width="4.5" stroke-linejoin="round"/>
+  <path d="M32 21 L41 26.2 L41 37.8 L32 43 L23 37.8 L23 26.2 Z"
+        fill="none" stroke="#e6edf3" stroke-width="3.5" stroke-linejoin="round"/>
+</svg>
