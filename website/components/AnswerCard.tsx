@@ -5,7 +5,6 @@ import {
   assemblyCrumbs,
   compactSpec,
   confidence,
-  positionSummary,
   renderedTextForGuard,
   stageName,
   unitColumns,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/render/format";
 import type { Stage } from "@/lib/types";
 import { checkNoInventedNumbers } from "@/lib/render/guard";
+import { LocationView } from "./LocationView";
 
 interface Props {
   fastener: Fastener;
@@ -79,7 +79,6 @@ export function AnswerCard({
   showDiagnostics,
 }: Props) {
   const conf = confidence(fastener, diagnostics);
-  const pos = positionSummary(fastener);
   const multi = fastener.stages.length > 1;
 
   // The output guard. Every numeral about to be displayed must exist in the
@@ -120,15 +119,6 @@ export function AnswerCard({
               <span key={c}>{c}</span>
             ))}
           </div>
-          {pos.length > 0 && (
-            <div className="pos-tags">
-              {pos.map((p) => (
-                <span className="pos-tag" key={p}>
-                  {p}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -150,6 +140,8 @@ export function AnswerCard({
           ))}
         </div>
       )}
+
+      <LocationView fastener={fastener} />
 
       {fastener.supersedes && (
         <div className="flag flag-info" data-testid="supersession">

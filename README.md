@@ -50,8 +50,8 @@ bolt" demand different actions. One blended percentage can say neither.
 | Supersessions applied | 5 (two GM bulletins — ball joints ×4, connecting rod bolts) |
 | Independently corroborated | 24 values · 3 promoted to tier A |
 | Source defects detected | **9 in GM's own document**, surfaced not corrected |
-| Unit tests | **70 passing**, incl. the zero-wrong-answers gate |
-| End-to-end tests | **28 passing** against the real static build |
+| Unit tests | **87 passing**, incl. the zero-wrong-answers gate |
+| End-to-end tests | **32 passing** against the real static build |
 | Golden set | 62 queries, 28 deliberate traps · **0 wrong** · 60% auto-answer · 32% abstain · 8% not-found |
 
 ## What makes it accurate
@@ -91,7 +91,7 @@ wrong answer, which no amount of re-reading the code would have revealed.
 cd website
 npm install
 npm run dev            # http://localhost:3000
-npm run test:all       # typecheck + 70 unit + build + 28 e2e
+npm run test:all       # typecheck + 87 unit + build + 32 e2e
 ```
 
 Rebuild the data (only when a source or overlay changes):
@@ -123,7 +123,8 @@ static files on the CDN — no serverless functions, no env vars, no secrets, fr
 | [08 — Eval Harness](docs/08-eval-harness.md) | How accuracy stays measurable |
 | [09 — Roadmap](docs/09-roadmap.md) | Phases and non-goals |
 | [10 — What Testing Found](docs/10-what-testing-found.md) | **Every defect the tests caught** |
-| [11 — Location & Diagrams](docs/11-location-and-diagrams.md) | Plan for showing *where* the fastener is |
+| [11 — Location & Diagrams](docs/11-location-and-diagrams.md) | Showing *where* the fastener is — Phase A built |
+| [NEXT-STEPS.md](NEXT-STEPS.md) | Diagram sources, and why callouts need a manual mapping |
 
 Docs 03, 05, 06, 08 and 09 were written for the original local-first design and carry a banner
 saying so. Their reasoning is why the current design looks as it does; their named technologies
@@ -144,9 +145,11 @@ wrench delivers them and a lug nut is not usefully "1239 lb in".
   fasteners (the upper ball joint nut is cited as 45, 50 **and** 80 lb-ft), and the most-copied
   C3 spec list turns out to be one vendor catalog mirrored four times. Resolving it needs the
   1979 GM shop manual. See [research/c3-1979/](research/c3-1979/README.md).
-- **No diagrams yet.** The "which bolt is it" problem is only half solved without them. The
-  source document contains no illustrations at all, so any diagram has to be authored — see
-  [11 — Location & Diagrams](docs/11-location-and-diagrams.md).
+- **No exploded diagrams yet.** Answers now show a plan-view car schematic with the region lit
+  and the location spelled out, which narrows it to a corner of the car. Going further needs a
+  real diagram: the source document has no illustrations, and the records carry **no part numbers
+  or callout identifiers**, so a parts-catalog diagram cannot be auto-mapped — see
+  [NEXT-STEPS.md](NEXT-STEPS.md).
 - **Semantic toggle uses concept vectors, not neural embeddings.** It is a real vector space and
   works offline with no download, but it is not a learned sentence embedder. A drop-in hook
   exists for one; the model files are not included.

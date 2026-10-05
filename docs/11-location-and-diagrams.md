@@ -1,6 +1,7 @@
 # 11 — Showing Where The Fastener Is
 
-> **Status: plan, not built.** Nothing in this document is implemented yet.
+> **Status: Phase A is BUILT.** Phases B-D remain a plan. See [NEXT-STEPS.md](../NEXT-STEPS.md)
+> for diagram sources found, and for why an exploded view cannot be auto-mapped to these records.
 
 ## The actual problem
 
@@ -34,12 +35,20 @@ That constraint drives everything below.
 
 ---
 
-## Phase A — Make the location you already have legible
+## Phase A — Make the location you already have legible ✅ BUILT
 
 *No new data. Highest value per hour.*
 
-Right now position shows as three grey chips (`rear`, `lower`). Replace with a **small top-down
-car schematic**, hand-drawn as inline SVG, with the relevant zone lit up:
+Implemented in [`lib/render/location.ts`](../website/lib/render/location.ts) and
+[`components/LocationView.tsx`](../website/components/LocationView.tsx), with 17 unit tests and
+4 end-to-end tests. The central invariant — **never narrow further than the data supports** — is
+asserted directly: when the source gives no side, both sides light up rather than one being
+guessed.
+
+Position used to show as three grey chips (`rear`, `lower`). It is now a **small plan-view car
+schematic**, inline SVG, drawn from above with the nose pointing up — the orientation in which
+the driver's side of the car appears on the left of the picture, so nothing has to be mentally
+rotated. The relevant zone is lit:
 
 ```
         ┌───────────────┐
@@ -50,18 +59,18 @@ car schematic**, hand-drawn as inline SVG, with the relevant zone lit up:
           front     rear
 ```
 
-- Derived entirely from `position` + the top-level assembly group, so it is correct by
-  construction and needs no new data.
-- One SVG, ~2 KB, driven by CSS classes. Works for all 254 fasteners with axes; for the other
-  454 it shows the subsystem region only (Engine / Chassis / Driveline / Body / Interior).
-- Add a **"view from"** line: `rear of car, underneath, driver side` — spelled out rather than
-  abbreviated, because "LH" is ambiguous when you're lying under the car facing backwards.
+- Derived entirely from `position` + the assembly path, so it is correct by construction and
+  needs no new data.
+- One inline SVG, ~2 KB, driven by CSS classes. All 254 fasteners with axes get a specific
+  region; the other 454 get the subsystem area **and an explicit note saying that is all the
+  source supports**, rather than implying precision that isn't there.
+- A spelled-out sentence — *"Rear of the car, lower / underneath, both sides."* — because "LH"
+  is ambiguous when you are lying under the car facing backwards, and "inboard" is worth
+  expanding to "toward the centreline".
 
-Also in Phase A: surface `alsoListedUnder` (already in the data). "Also listed under Engine
-Exhaust" tells you the bolt is reachable while doing exhaust work — a genuine location clue
-GM gave us for free.
-
-**Effort: small. Risk: none. Covers: every fastener, at low resolution.**
+**Not done:** surfacing `alsoListedUnder` ("also listed under Engine Exhaust" is a real
+location clue GM gave us for free). It is still in the data and worth adding; it just was not
+part of this pass.
 
 ---
 

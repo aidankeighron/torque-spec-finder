@@ -320,3 +320,43 @@ test("link preview metadata is present and absolute", async ({ page }) => {
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /torque/i);
 });
+
+test("LOCATION: schematic lights the right corner and spells it out", async ({ page }) => {
+  await look(page, "rear shock bottom bolt");
+  const loc = page.getByTestId("location-view");
+  await expect(loc).toBeVisible();
+  await expect(page.getByTestId("location-sentence")).toContainText(/rear of the car/i);
+  await expect(page.getByTestId("location-sentence")).toContainText(/underneath/i);
+  // Rear band, both sides — the source doesn't say which side.
+  await expect(loc.locator('[data-zone="rear-LH"]')).toHaveCount(1);
+  await expect(loc.locator('[data-zone="rear-RH"]')).toHaveCount(1);
+  await expect(loc.locator('[data-zone="front-LH"]')).toHaveCount(0);
+  await expect(loc.locator('[data-axis="vertical"]')).toContainText("lower");
+});
+
+test("LOCATION: front fastener lights the front, not the rear", async ({ page }) => {
+  await look(page, "front upper ball joint");
+  const loc = page.getByTestId("location-view");
+  await expect(loc.locator('[data-zone="front-LH"]')).toHaveCount(1);
+  await expect(loc.locator('[data-zone="rear-LH"]')).toHaveCount(0);
+  await expect(loc.locator('[data-axis="vertical"]')).toContainText("upper");
+});
+
+test("LOCATION: never invents a side the source didn't give", async ({ page }) => {
+  await look(page, "lug nuts");
+  const loc = page.getByTestId("location-view");
+  // All four corners lit: a lug nut is at every wheel.
+  for (const z of ["front-LH", "front-RH", "rear-LH", "rear-RH"]) {
+    await expect(loc.locator(`[data-zone="${z}"]`)).toHaveCount(1);
+  }
+  // The source gives this record no position axis at all, so the view lights
+  // the whole subsystem AND says that is what it is doing, rather than
+  // silently implying precision it does not have.
+  await expect(page.getByTestId("location-approximate")).toBeVisible();
+});
+
+test("LOCATION: says so plainly when it only knows the subsystem", async ({ page }) => {
+  await look(page, "intake manifold");
+  await expect(page.getByTestId("location-approximate")).toContainText(/region only/i);
+  await expect(page.getByTestId("location-sentence")).toContainText(/doesn't give a position/i);
+});
